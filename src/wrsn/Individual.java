@@ -67,7 +67,7 @@ public class Individual {
         E_sensor_charged.add(E_charge);
         Collections.sort(E_sensor_charged);
         
-
+        // Trường hợp sensor cuối dư năng lượng thì đem chia lại cho các sensor khác
         boolean flag=false;
         for (int i = 1 ; i<E_sensor_charged.size() ; i++) {
             Integer E_sensor = E_sensor_charged.get(i)-E_sensor_charged.get(i-1);
@@ -96,10 +96,8 @@ public class Individual {
         }
 
         for (int i = 1 ; i<E_sensor_charged.size() ; i++) {
-            taus.add((E_sensor_charged.get(i)-E_sensor_charged.get(i-1))/(WCE.E_MC-E_T));
+            taus.add((E_sensor_charged.get(i)-E_sensor_charged.get(i-1))/(double)E_charge);
         }
-
-        
     }
 
     private void calculateTotalDistance(Map map) {
