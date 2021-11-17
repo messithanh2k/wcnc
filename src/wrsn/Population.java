@@ -1,4 +1,4 @@
-package wrsn;
+package src.wrsn;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -28,13 +28,13 @@ public class Population {
     
     //////// pha 2
     public Population(int nIndividuals, Map map, Individual best_path_individual) {
-//        N = nIndividuals;
-//        individuals = new ArrayList<Individual>();
-//        for (int i = 0; i < N; i++) {
-//            // Khoi tao ca the i
-//            setIndividual(i, new Individual(map));
-//        }
-//        individuals.sort((i1, i2) -> Double.compare(i1.getFitnessF(), i2.getFitnessF()));
+       N = nIndividuals;
+       individuals = new ArrayList<Individual>();
+       for (int i = 0; i < N; i++) {
+        //    Khoi tao ca the i
+           setIndividual(i, new Individual(map,best_path_individual));
+       }
+       individuals.sort((i1, i2) -> Double.compare(i1.getFitnessF(), i2.getFitnessF()));
     }
 
     public int getN() {
@@ -61,4 +61,5 @@ public class Population {
         if (index > individuals.size() - 1) individuals.add(individual);
         else individuals.set(index, individual);
     }
+
 }
