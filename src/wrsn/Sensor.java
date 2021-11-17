@@ -1,12 +1,12 @@
-package wrsn;
-
-import utils.Factor;
+package src.wrsn;
 
 import java.util.Random;
 
+import src.utils.Factor;
+
 public class Sensor {
     public static final double E_MAX = 10800;    // Nang luong toi da cua sensor
-    public static final double E_MIN = 540;  // Nang luong toi thieu cua sensor
+    public static final double E_MIN = 0;  // Nang luong toi thieu cua sensor
     public static final double E_THRESHOLD = 0.5 * E_MAX;  // Nang luong nguong sac cua sensor
     private double cX;  // Hoanh do cua sensor
     private double cY;  // Tung do cua sensor
