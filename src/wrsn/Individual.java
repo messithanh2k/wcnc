@@ -1,12 +1,18 @@
-package wrsn;
-
-import utils.Factor;
-import utils.Factory;
+package src.wrsn;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Random;
+
+import javax.print.event.PrintEvent;
+
+import src.utils.Factor;
+import src.utils.Factory;
+
 
 public class Individual {
+    private static Random rd = new Random();
     private int N; // so luong gene
     private ArrayList<Integer> path; // duong di cua xe sac qua cac sensor
 
@@ -35,20 +41,57 @@ public class Individual {
     
     // for phase 2
     public Individual(Map map, Individual individual) {
+        HashMap<Integer, Boolean> isDuplicate  = new HashMap<>();
+        taus = new ArrayList<>();
         N = individual.getN();
         path = new ArrayList<>(individual.getPath());
-        individual.calculateTotalDistance(map);
-        
+
+
+        this.calculateTotalDistance(map);
 		double E_T = totalDistance * WCE.P_M / WCE.V;
-		double t = (WCE.E_MC - E_T) / WCE.U;
-		
-		ArrayList<Double> t_max = new ArrayList<Double>(); 
-		for(int i = 0; i < N; i++) {
-			t_max.set(i, (Sensor.E_MAX - Sensor.E_MIN) / (WCE.U - map.getSensor(path.get(i)).getP()));
-			//////
-		}
-        // taus
+
+        // năng lượng sạc
+		int E_charge = (int)(WCE.E_MC - E_T);
         
+        ArrayList<Integer> E_sensor_charged = new ArrayList<>();
+        E_sensor_charged.add(0);
+
+
+        // Chia năng lượng N khoảng 
+		for (int i = 0 ; i < N  ; i++) {
+            Integer tmp = rd.nextInt(E_charge);
+            while( (tmp==0 || isDuplicate.containsKey(tmp))) {
+                tmp = rd.nextInt(E_charge);
+            }
+            
+            E_sensor_charged.add(tmp);
+            isDuplicate.put(tmp, true);
+        }
+
+        Collections.sort(E_sensor_charged);
+        
+
+        for (int i = 1 ; i<E_sensor_charged.size() ; i++) {
+            Integer E_sensor = E_sensor_charged.get(i)-E_sensor_charged.get(i-1);
+            
+            if (E_sensor > (int) Sensor.E_MAX) {
+                Integer current = E_sensor_charged.get(i);
+                E_sensor_charged.set(i,(int)(current - (E_sensor-Sensor.E_MAX))); 
+
+                E_sensor = (int) Sensor.E_MAX;
+            }
+            else if (E_sensor < (int) Sensor.E_MIN)
+            {
+                Integer current = E_sensor_charged.get(i);
+                E_sensor_charged.set(i,(int)(current + (Sensor.E_MIN - E_sensor))); 
+
+                E_sensor = (int) Sensor.E_MIN;
+            }
+
+            taus.add((E_sensor)/(WCE.U-map.getSensor(path.get(i-1)).getP()));
+        }
+        
+        System.out.println(taus.toString());
     }
 
     private void calculateTotalDistance(Map map) {
