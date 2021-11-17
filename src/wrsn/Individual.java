@@ -45,10 +45,9 @@ public class Individual {
         N = individual.getN();
         path = new ArrayList<>(individual.getPath());
 
-
+        
         this.calculateTotalDistance(map);
 		double E_T = totalDistance * WCE.P_M / WCE.V;
-
         // năng lượng sạc
 		int E_charge = (int)(WCE.E_MC - E_T);
         
@@ -97,11 +96,10 @@ public class Individual {
         }
 
         for (int i = 1 ; i<E_sensor_charged.size() ; i++) {
-            taus.add((E_sensor_charged.get(i)-E_sensor_charged.get(i-1))/(WCE.U-map.getSensor(path.get(i-1)).getP()));
+            taus.add((E_sensor_charged.get(i)-E_sensor_charged.get(i-1))/(WCE.E_MC-E_T));
         }
 
-
-        System.out.println(taus.toString());
+        
     }
 
     private void calculateTotalDistance(Map map) {
