@@ -5,7 +5,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Random;
 
-import javax.print.event.PrintEvent;
 
 import src.utils.Factor;
 import src.utils.Factory;
@@ -54,43 +53,54 @@ public class Individual {
 		int E_charge = (int)(WCE.E_MC - E_T);
         
         ArrayList<Integer> E_sensor_charged = new ArrayList<>();
+
+        
+// Chia năng lượng N khoảng 
         E_sensor_charged.add(0);
-
-
-        // Chia năng lượng N khoảng 
-		for (int i = 0 ; i < N  ; i++) {
+		for (int i = 0 ; i < N - 1  ; i++) {
             Integer tmp = rd.nextInt(E_charge);
             while( (tmp==0 || isDuplicate.containsKey(tmp))) {
                 tmp = rd.nextInt(E_charge);
             }
-            
             E_sensor_charged.add(tmp);
             isDuplicate.put(tmp, true);
         }
-
+        E_sensor_charged.add(E_charge);
         Collections.sort(E_sensor_charged);
         
 
+        boolean flag=false;
         for (int i = 1 ; i<E_sensor_charged.size() ; i++) {
             Integer E_sensor = E_sensor_charged.get(i)-E_sensor_charged.get(i-1);
-            
+            if (i==E_sensor_charged.size()-1 && E_sensor>Sensor.E_MAX) {
+                flag=true;
+            }
+
             if (E_sensor > (int) Sensor.E_MAX) {
                 Integer current = E_sensor_charged.get(i);
                 E_sensor_charged.set(i,(int)(current - (E_sensor-Sensor.E_MAX))); 
-
-                E_sensor = (int) Sensor.E_MAX;
             }
-            else if (E_sensor < (int) Sensor.E_MIN)
-            {
-                Integer current = E_sensor_charged.get(i);
-                E_sensor_charged.set(i,(int)(current + (Sensor.E_MIN - E_sensor))); 
-
-                E_sensor = (int) Sensor.E_MIN;
-            }
-
-            taus.add((E_sensor)/(WCE.U-map.getSensor(path.get(i-1)).getP()));
         }
-        
+        if (flag) {
+            for (int i = E_sensor_charged.size()-2 ; i>=0 ; i--) {
+                Integer E_sensor = E_sensor_charged.get(i+1)-E_sensor_charged.get(i);
+                if (E_sensor > (int) Sensor.E_MAX) {
+                    Integer current = E_sensor_charged.get(i);
+                    E_sensor_charged.set(i,(int)(current + (E_sensor-Sensor.E_MAX))); 
+    
+                    E_sensor = (int) Sensor.E_MAX;
+                }
+                else {
+                    break;
+                }
+            }
+        }
+
+        for (int i = 1 ; i<E_sensor_charged.size() ; i++) {
+            taus.add((E_sensor_charged.get(i)-E_sensor_charged.get(i-1))/(WCE.U-map.getSensor(path.get(i-1)).getP()));
+        }
+
+
         System.out.println(taus.toString());
     }
 
