@@ -106,4 +106,10 @@ public class Factory {
         }
         return Factor.ALPHA * f1 + (1 - Factor.ALPHA) * f2;
     }
+
+    // public int fitnessGGACS(Individual individual, Map map){
+    //     int N = individual.getN();
+    //     ArrayList<Integer> path = individual.getPath();
+    //     ArrayList<Double> taus = individual.getTaus();
+    // }
 }

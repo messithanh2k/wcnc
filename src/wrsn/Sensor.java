@@ -1,8 +1,8 @@
-package src.wrsn;
+package wrsn;
 
 import java.util.Random;
 
-import src.utils.Factor;
+import utils.Factor;
 
 public class Sensor {
     public static final double E_MAX = 10800;    // Nang luong toi da cua sensor

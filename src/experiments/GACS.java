@@ -6,6 +6,8 @@ import utils.FileManipulation;
 import wrsn.Individual;
 import wrsn.Map;
 import wrsn.Population;
+import wrsn.Sensor;
+import wrsn.WCE;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -27,14 +29,68 @@ public class GACS extends Algorithm {
 
 		Individual best_path_individual = gacs.phase1(P, map, factor);
 
-		// phase 2
-		Population P2 = new Population(Factor.N, map, best_path_individual);
-		gacs.phase2(P2, map, factor);
 
-		////////// Dua T max vào hàm SPAHX
-		gacs.SPAHX(P2.getIndividuals().get(0), P2.getIndividuals().get(1), factor.E_MC_DEFAULT / factor.U_DEFAULT, map,
-				factor);
-		System.out.println("hhhh");
+		// calculate t and max_t_list
+		best_path_individual.calculateTotalDistance(map);
+		double E_T = best_path_individual.getTotalDistance() * WCE.P_M / WCE.V;
+
+		double t = (WCE.E_MC - E_T) / WCE.U;
+		int N = best_path_individual.getN();
+
+		ArrayList<Double> max_t_list = new ArrayList<>();
+		for(int i = 0; i < N; i++){
+			double max_t = (Sensor.E_MAX - Sensor.E_MIN) / (WCE.U - map.getSensor(i).getP());
+			max_t_list.add(max_t / t);
+		}
+
+		/* test init
+		Individual in_pha_2 = new Individual(map, best_path_individual);
+		double sum = 0;
+		for (double i : in_pha_2.getTaus()){
+			sum += i;
+		}
+		System.out.println(sum);
+		System.out.println(gacs.checkIndividualValid(best_path_individual, in_pha_2, map));
+		*/
+		
+		/* test mutation
+		Individual parent = new Individual(map, best_path_individual);
+		Individual child = gacs.SAC(parent, max_t_list);
+
+		ArrayList<Double> abs = new ArrayList<>();
+		for(int i = 0; i < parent.getN(); i++){
+			abs.add(child.getTau(i) - parent.getTau(i));
+		}
+		System.out.println(abs);
+
+		System.out.println(gacs.checkIndividualValid(best_path_individual, child, map));
+		*/
+
+		/* test crossover
+		Individual parent1 = new Individual(map, best_path_individual);
+		Individual parent2 = new Individual(map, best_path_individual);
+
+		ArrayList<Individual> offspring = gacs.SPAHX(parent1, parent2, sum_t, map, factor);
+		ArrayList<Double> tausss = offspring.get(0).getTaus();
+		double sum = 0;
+		for (double i : tausss){
+			sum += i;
+		}
+		System.out.println(sum);
+
+		System.out.println(gacs.checkIndividualValid(best_path_individual, offspring.get(0), map));
+		System.out.println(gacs.checkIndividualValid(best_path_individual, offspring.get(1), map));
+		*/
+
+
+		// // phase 2
+		// Population P2 = new Population(Factor.N, map, best_path_individual);
+		// gacs.phase2(P2, map, factor);
+
+		// ////////// Dua T max vào hàm SPAHX
+		// gacs.SPAHX(P2.getIndividuals().get(0), P2.getIndividuals().get(1), factor.E_MC_DEFAULT / factor.U_DEFAULT, map,
+		// 		factor);
+		// System.out.println("hhhh");
 	}
 //    @Override
 //    public void execute(Map map, Factor factor) {
@@ -52,7 +108,7 @@ public class GACS extends Algorithm {
 	// ghÃ©p, Ä‘á»™t biáº¿n -> náº¡p cÃ¡ thá»ƒ con vÃ o -> chá»�n lá»�c Ä‘á»ƒ táº¡o
 	// quáº§n thá»ƒ má»›i
 	private Individual phase1(Population P, Map map, Factor factor) {
-		for (int gen = 0; gen < 100; gen++) {
+		for (int gen = 0; gen < 1000; gen++) {
 			int populationSize = P.getN(); // kich thuoc quan the
 
 			int N = map.getN(); // so luong sensor
@@ -289,16 +345,19 @@ public class GACS extends Algorithm {
 
 	/////// trÃ­
 	private ArrayList<Individual> SPAHX(Individual parent1, Individual parent2, double sumT, Map map, Factor factor) {
+		System.out.println(sumT);
 		int N = parent1.getN();
 		Random rand = new Random();
 		int i = rand.nextInt(N); // random vi tri cat
 		Individual offspring1 = new Individual(parent1);
 		Individual offspring2 = new Individual(parent2);
+
 		double beta = rand.nextDouble() - 0.5; // random beta
 
 		// lai 2 con
 		ArrayList<Double> taus1 = offspring1.getTaus();
 		ArrayList<Double> taus2 = offspring2.getTaus();
+
 		taus1.set(i, (1 - beta) * parent1.getTaus().get(i) + beta * parent2.getTaus().get(i));
 		taus2.set(i, (1 - beta) * parent2.getTaus().get(i) + beta * parent1.getTaus().get(i));
 
@@ -339,7 +398,6 @@ public class GACS extends Algorithm {
 			editTaus(taus2,parent2.getPath(), sumTaus2, sumT, map, factor, N);
 		}
 
-
 		return new ArrayList<>() {
 			{
 				add(offspring1);
@@ -376,15 +434,15 @@ public class GACS extends Algorithm {
 		index.add(max);
 		
 		for (int i = 1; i < N; i++) {
-			double tmax = map.getSensor(path.get(i-1)).getE()/(factor.U_DEFAULT-map.getSensor(path.get(i-1)).getP());
+			double tmax = map.getSensor(path.get(i-1)).getE()/(Factor.U_DEFAULT-map.getSensor(path.get(i-1)).getP());
 			if ((index.get(i) - index.get(i - 1)) > tmax) {
 				index.set(i, index.get(i-1) + tmax);
 			}
 		}
-		double tmax_ = map.getSensor(path.get(N-1)).getE()/(factor.U_DEFAULT-map.getSensor(path.get(N-1)).getP());
+		double tmax_ = map.getSensor(path.get(N-1)).getE()/(Factor.U_DEFAULT-map.getSensor(path.get(N-1)).getP());
 		if ((index.get(N) - index.get(N - 1)) > tmax_) {
 			for (int i = N-1; i > 0; i--) {
-				double tmax = map.getSensor(path.get(i)).getE()/(factor.U_DEFAULT-map.getSensor(path.get(i)).getP());
+				double tmax = map.getSensor(path.get(i)).getE()/(Factor.U_DEFAULT-map.getSensor(path.get(i)).getP());
 				if ((index.get(i+1) - index.get(i)) > tmax) {
 					index.set(i, index.get(i+1) - tmax);
 				}else {
@@ -398,8 +456,53 @@ public class GACS extends Algorithm {
 	}
 
 	/////// huy
-	private Individual SAC(Individual parent) {
+	private Individual SAC(Individual parent, ArrayList<Double> max_t_list) {
 		Individual child = new Individual(parent);
+		int N = parent.getN();
+		Random rand = new Random();
+		int i = rand.nextInt(N);
+		int j = rand.nextInt(N);
+
+		double max_random_theta1 = max_t_list.get(i) - parent.getTau(i);
+
+		double theta1;
+		do {
+			theta1 = max_random_theta1 * rand.nextDouble();
+		} while (theta1 == 0);
+		double theta2;
+		do {
+			theta2 = parent.getTau(j) * rand.nextDouble();
+		} while (theta2 == 0);
+		double theta = Math.min(theta1, theta2);
+		child.setTau(i, parent.getTau(i) + theta);
+		child.setTau(j, parent.getTau(j) - theta);
+
 		return child;
+	}
+
+	private boolean checkIndividualValid(Individual best_path_individual, Individual individual, Map map){
+		best_path_individual.calculateTotalDistance(map);
+		double E_T = best_path_individual.getTotalDistance() * WCE.P_M / WCE.V;
+
+		double t = (WCE.E_MC - E_T) / WCE.U;
+		int N = best_path_individual.getN();
+
+		ArrayList<Double> max_t_list = new ArrayList<>();
+		for(int i = 0; i < N; i++){
+			double max_t = (Sensor.E_MAX - Sensor.E_MIN) / (WCE.U - map.getSensor(i).getP());
+			max_t_list.add(max_t / t);
+		}
+
+		ArrayList<Double> tausss = individual.getTaus();
+
+		boolean check = true;
+		for(int i = 0; i < N; i++){
+			if (tausss.get(i) > max_t_list.get(i)){
+				check = false;
+				break;
+			}
+		}
+		
+		return check;
 	}
 }

@@ -1,4 +1,4 @@
-package src.wrsn;
+package wrsn;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -6,8 +6,8 @@ import java.util.HashMap;
 import java.util.Random;
 
 
-import src.utils.Factor;
-import src.utils.Factory;
+import utils.Factor;
+import utils.Factory;
 
 
 public class Individual {
@@ -40,7 +40,7 @@ public class Individual {
     
     // for phase 2
     public Individual(Map map, Individual individual) {
-        HashMap<Integer, Boolean> isDuplicate  = new HashMap<>();
+        HashMap<Double, Boolean> isDuplicate  = new HashMap<>();
         taus = new ArrayList<>();
         N = individual.getN();
         path = new ArrayList<>(individual.getPath());
@@ -48,59 +48,62 @@ public class Individual {
         
         this.calculateTotalDistance(map);
 		double E_T = totalDistance * WCE.P_M / WCE.V;
-        // năng lượng sạc
-		int E_charge = (int)(WCE.E_MC - E_T);
+        double t = (WCE.E_MC - E_T)/WCE.U;
+        ArrayList<Double> max_t_list = new ArrayList<>();
+		for(int i = 0; i < N; i++){
+			double max_t = (Sensor.E_MAX - Sensor.E_MIN) / (WCE.U - map.getSensor(i).getP());
+			max_t_list.add(max_t / t);
+		}
         
-        ArrayList<Integer> E_sensor_charged = new ArrayList<>();
+        ArrayList<Double> t_sensor_charged = new ArrayList<>();
 
-        
-// Chia năng lượng N khoảng 
-        E_sensor_charged.add(0);
+
+// Chia thời gian ra N khoảng 
+        t_sensor_charged.add(0.0);
 		for (int i = 0 ; i < N - 1  ; i++) {
-            Integer tmp = rd.nextInt(E_charge);
+            Double tmp = rd.nextDouble();
             while( (tmp==0 || isDuplicate.containsKey(tmp))) {
-                tmp = rd.nextInt(E_charge);
+                tmp = rd.nextDouble();
             }
-            E_sensor_charged.add(tmp);
+            t_sensor_charged.add(tmp);
             isDuplicate.put(tmp, true);
         }
-        E_sensor_charged.add(E_charge);
-        Collections.sort(E_sensor_charged);
+        t_sensor_charged.add(1.0);
+        Collections.sort(t_sensor_charged);
         
-        // Trường hợp sensor cuối dư năng lượng thì đem chia lại cho các sensor khác
+        // Trường hợp sensor cuối dư t_charged > t_max thì đem chia lại cho các sensor khác
         boolean flag=false;
-        for (int i = 1 ; i<E_sensor_charged.size() ; i++) {
-            Integer E_sensor = E_sensor_charged.get(i)-E_sensor_charged.get(i-1);
-            if (i==E_sensor_charged.size()-1 && E_sensor>Sensor.E_MAX) {
+        for (int i = 1 ; i<t_sensor_charged.size() ; i++) {
+            Double t_sensor = t_sensor_charged.get(i)-t_sensor_charged.get(i-1);
+            if (i==t_sensor_charged.size()-1 && t_sensor>max_t_list.get(i-1)) {
                 flag=true;
             }
 
-            if (E_sensor > (int) Sensor.E_MAX) {
-                Integer current = E_sensor_charged.get(i);
-                E_sensor_charged.set(i,(int)(current - (E_sensor-Sensor.E_MAX))); 
+            if (t_sensor > max_t_list.get(i-1)) {
+                double current = t_sensor_charged.get(i);
+                t_sensor_charged.set(i-1,current - (t_sensor-max_t_list.get(i-1))); 
             }
         }
+
         if (flag) {
-            for (int i = E_sensor_charged.size()-2 ; i>=0 ; i--) {
-                Integer E_sensor = E_sensor_charged.get(i+1)-E_sensor_charged.get(i);
-                if (E_sensor > (int) Sensor.E_MAX) {
-                    Integer current = E_sensor_charged.get(i);
-                    E_sensor_charged.set(i,(int)(current + (E_sensor-Sensor.E_MAX))); 
-    
-                    E_sensor = (int) Sensor.E_MAX;
-                }
+            for (int i = t_sensor_charged.size()-2 ; i>=0 ; i--) {
+                Double t_sensor = t_sensor_charged.get(i+1)-t_sensor_charged.get(i);
+                if (t_sensor > max_t_list.get(i)) {
+                    Double current = t_sensor_charged.get(i);
+                    t_sensor_charged.set(i,current + (t_sensor-max_t_list.get(i))); 
+                    }
                 else {
                     break;
                 }
             }
         }
 
-        for (int i = 1 ; i<E_sensor_charged.size() ; i++) {
-            taus.add((E_sensor_charged.get(i)-E_sensor_charged.get(i-1))/(double)E_charge);
+        for (int i = 1 ; i<t_sensor_charged.size() ; i++) {
+            taus.add(t_sensor_charged.get(i)-t_sensor_charged.get(i-1));
         }
     }
 
-    private void calculateTotalDistance(Map map) {
+    public void calculateTotalDistance(Map map) {
         int nSensors = path.size();
         for (int i = 0; i < nSensors; i++) {
             int previous = i == 0 ? Factor.BS_INDEX : path.get(i - 1);

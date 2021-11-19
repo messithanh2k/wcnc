@@ -1,4 +1,4 @@
-package src.wrsn;
+package wrsn;
 
 import java.util.ArrayList;
 import java.util.Collections;
