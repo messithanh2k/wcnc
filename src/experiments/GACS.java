@@ -29,7 +29,6 @@ public class GACS extends Algorithm {
 
 		Individual best_path_individual = gacs.phase1(P, map, factor);
 
-
 		// calculate t and max_t_list
 		best_path_individual.calculateTotalDistance(map);
 		double E_T = best_path_individual.getTotalDistance() * WCE.P_M / WCE.V;
@@ -38,59 +37,53 @@ public class GACS extends Algorithm {
 		int N = best_path_individual.getN();
 
 		ArrayList<Double> max_t_list = new ArrayList<>();
-		for(int i = 0; i < N; i++){
+		for (int i = 0; i < N; i++) {
 			double max_t = (Sensor.E_MAX - Sensor.E_MIN) / (WCE.U - map.getSensor(i).getP());
 			max_t_list.add(max_t / t);
 		}
 
-		/* test init
-		Individual in_pha_2 = new Individual(map, best_path_individual);
-		double sum = 0;
-		for (double i : in_pha_2.getTaus()){
-			sum += i;
-		}
-		System.out.println(sum);
-		System.out.println(gacs.checkIndividualValid(best_path_individual, in_pha_2, map));
-		*/
-		
-		/* test mutation
-		Individual parent = new Individual(map, best_path_individual);
-		Individual child = gacs.SAC(parent, max_t_list);
+		/*
+		 * test init Individual in_pha_2 = new Individual(map, best_path_individual);
+		 * double sum = 0; for (double i : in_pha_2.getTaus()){ sum += i; }
+		 * System.out.println(sum);
+		 * System.out.println(gacs.checkIndividualValid(best_path_individual, in_pha_2,
+		 * map));
+		 */
 
-		ArrayList<Double> abs = new ArrayList<>();
-		for(int i = 0; i < parent.getN(); i++){
-			abs.add(child.getTau(i) - parent.getTau(i));
-		}
-		System.out.println(abs);
+		/*
+		 * test mutation Individual parent = new Individual(map, best_path_individual);
+		 * Individual child = gacs.SAC(parent, max_t_list);
+		 * 
+		 * ArrayList<Double> abs = new ArrayList<>(); for(int i = 0; i < parent.getN();
+		 * i++){ abs.add(child.getTau(i) - parent.getTau(i)); } System.out.println(abs);
+		 * 
+		 * System.out.println(gacs.checkIndividualValid(best_path_individual, child,
+		 * map));
+		 */
 
-		System.out.println(gacs.checkIndividualValid(best_path_individual, child, map));
-		*/
-
-		/* test crossover
-		Individual parent1 = new Individual(map, best_path_individual);
-		Individual parent2 = new Individual(map, best_path_individual);
-
-		ArrayList<Individual> offspring = gacs.SPAHX(parent1, parent2, sum_t, map, factor);
-		ArrayList<Double> tausss = offspring.get(0).getTaus();
-		double sum = 0;
-		for (double i : tausss){
-			sum += i;
-		}
-		System.out.println(sum);
-
-		System.out.println(gacs.checkIndividualValid(best_path_individual, offspring.get(0), map));
-		System.out.println(gacs.checkIndividualValid(best_path_individual, offspring.get(1), map));
-		*/
-
+		/*
+		 * test crossover Individual parent1 = new Individual(map,
+		 * best_path_individual); Individual parent2 = new Individual(map,
+		 * best_path_individual);
+		 * 
+		 * ArrayList<Individual> offspring = gacs.SPAHX(parent1, parent2, sum_t, map,
+		 * factor); ArrayList<Double> tausss = offspring.get(0).getTaus(); double sum =
+		 * 0; for (double i : tausss){ sum += i; } System.out.println(sum);
+		 * 
+		 * System.out.println(gacs.checkIndividualValid(best_path_individual,
+		 * offspring.get(0), map));
+		 * System.out.println(gacs.checkIndividualValid(best_path_individual,
+		 * offspring.get(1), map));
+		 */
 
 		// // phase 2
-		// Population P2 = new Population(Factor.N, map, best_path_individual);
-		// gacs.phase2(P2, map, factor);
+		Population P2 = new Population(Factor.N, map, best_path_individual);
+		gacs.phase2(P2, map, factor);
 
-		// ////////// Dua T max vào hàm SPAHX
-		// gacs.SPAHX(P2.getIndividuals().get(0), P2.getIndividuals().get(1), factor.E_MC_DEFAULT / factor.U_DEFAULT, map,
-		// 		factor);
-		// System.out.println("hhhh");
+		////////// Dua T max vào hàm SPAHX
+		double t_normalize = 1.0;
+		gacs.SPAHX(P2.getIndividuals().get(0), P2.getIndividuals().get(1), t_normalize, max_t_list);
+		System.out.println("hhhh");
 	}
 //    @Override
 //    public void execute(Map map, Factor factor) {
@@ -344,8 +337,8 @@ public class GACS extends Algorithm {
 	}
 
 	/////// trÃ­
-	private ArrayList<Individual> SPAHX(Individual parent1, Individual parent2, double sumT, Map map, Factor factor) {
-		System.out.println(sumT);
+	private ArrayList<Individual> SPAHX(Individual parent1, Individual parent2, double t_normalize,
+			ArrayList<Double> max_t_list) {
 		int N = parent1.getN();
 		Random rand = new Random();
 		int i = rand.nextInt(N); // random vi tri cat
@@ -380,22 +373,22 @@ public class GACS extends Algorithm {
 //		System.out.println(sumTaus1);
 //		System.out.println(sumTaus2);
 		// chinh gen1
-		if (sumTaus1 > sumT) {
-			double ratio = sumT / sumTaus1;
+		if (sumTaus1 > t_normalize) {
+			double ratio = t_normalize / sumTaus1;
 			for (int j = 0; j < N; j++) {
 				taus1.set(j, taus1.get(j) * ratio);
 			}
 		} else {
-			editTaus(taus1,parent1.getPath(), sumTaus1, sumT, map, factor, N);
+			editTaus(taus1, parent1.getPath(), sumTaus1, t_normalize, max_t_list, N);
 		}
 		// chinh gen2
-		if (sumTaus2 > sumT) {
-			double ratio = sumT / sumTaus2;
+		if (sumTaus2 > t_normalize) {
+			double ratio = t_normalize / sumTaus2;
 			for (int j = 0; j < N; j++) {
 				taus2.set(j, taus2.get(j) * ratio);
 			}
 		} else {
-			editTaus(taus2,parent2.getPath(), sumTaus2, sumT, map, factor, N);
+			editTaus(taus2, parent2.getPath(), sumTaus2, t_normalize, max_t_list, N);
 		}
 
 		return new ArrayList<>() {
@@ -407,9 +400,10 @@ public class GACS extends Algorithm {
 	}
 
 	// Them tgian
-	private void editTaus(ArrayList<Double> taus,ArrayList<Integer> path, double sumTaus, double sumT, Map map, Factor factor,int N) {
+	private void editTaus(ArrayList<Double> taus, ArrayList<Integer> path, double sumTaus, double t_normalize,
+			ArrayList<Double> max_t_list, int N) {
 		double min = 0;
-		double max = sumT - sumTaus;
+		double max = t_normalize - sumTaus;
 		ArrayList<Double> rd = new ArrayList<Double>();
 		Random rand = new Random();
 		rd.add(min);
@@ -423,29 +417,26 @@ public class GACS extends Algorithm {
 		for (int i = 0; i < N; i++) {
 			rd.set(i, rd.get(i + 1) - rd.get(i));
 		}
-		
+
 		ArrayList<Double> index = new ArrayList<Double>();
 		index.add(min);
-		for (int i = 0; i < N-1; i++) {
-			double temp = taus.get(i)+rd.get(i)+accumulate;
-			accumulate += temp;
+		for (int i = 0; i < N - 1; i++) {
+			double temp = taus.get(i) + rd.get(i) + accumulate;
+			accumulate = temp;
 			index.add(temp);
 		}
-		index.add(max);
-		
+		index.add(t_normalize);
+
 		for (int i = 1; i < N; i++) {
-			double tmax = map.getSensor(path.get(i-1)).getE()/(Factor.U_DEFAULT-map.getSensor(path.get(i-1)).getP());
-			if ((index.get(i) - index.get(i - 1)) > tmax) {
-				index.set(i, index.get(i-1) + tmax);
+			if ((index.get(i) - index.get(i - 1)) > max_t_list.get(i - 1)) {
+				index.set(i, index.get(i - 1) + max_t_list.get(i - 1));
 			}
 		}
-		double tmax_ = map.getSensor(path.get(N-1)).getE()/(Factor.U_DEFAULT-map.getSensor(path.get(N-1)).getP());
-		if ((index.get(N) - index.get(N - 1)) > tmax_) {
-			for (int i = N-1; i > 0; i--) {
-				double tmax = map.getSensor(path.get(i)).getE()/(Factor.U_DEFAULT-map.getSensor(path.get(i)).getP());
-				if ((index.get(i+1) - index.get(i)) > tmax) {
-					index.set(i, index.get(i+1) - tmax);
-				}else {
+		if ((index.get(N) - index.get(N - 1)) > max_t_list.get(149)) {
+			for (int i = N - 1; i > 0; i--) {
+				if ((index.get(i + 1) - index.get(i)) > max_t_list.get(i)) {
+					index.set(i, index.get(i + 1) - max_t_list.get(i));
+				} else {
 					break;
 				}
 			}
@@ -453,6 +444,15 @@ public class GACS extends Algorithm {
 		for (int i = 0; i < N; i++) {
 			taus.set(i, index.get(i + 1) - index.get(i));
 		}
+		double sum = 0;
+		for (int i = 0; i < N; i++) {
+			sum += taus.get(i);
+			if (taus.get(i) > max_t_list.get(i)) {
+				System.out.println("sai");
+			}
+		}
+		System.out.println(sum);
+		System.out.println(sum);
 	}
 
 	/////// huy
@@ -480,7 +480,7 @@ public class GACS extends Algorithm {
 		return child;
 	}
 
-	private boolean checkIndividualValid(Individual best_path_individual, Individual individual, Map map){
+	private boolean checkIndividualValid(Individual best_path_individual, Individual individual, Map map) {
 		best_path_individual.calculateTotalDistance(map);
 		double E_T = best_path_individual.getTotalDistance() * WCE.P_M / WCE.V;
 
@@ -488,7 +488,7 @@ public class GACS extends Algorithm {
 		int N = best_path_individual.getN();
 
 		ArrayList<Double> max_t_list = new ArrayList<>();
-		for(int i = 0; i < N; i++){
+		for (int i = 0; i < N; i++) {
 			double max_t = (Sensor.E_MAX - Sensor.E_MIN) / (WCE.U - map.getSensor(i).getP());
 			max_t_list.add(max_t / t);
 		}
@@ -496,13 +496,13 @@ public class GACS extends Algorithm {
 		ArrayList<Double> tausss = individual.getTaus();
 
 		boolean check = true;
-		for(int i = 0; i < N; i++){
-			if (tausss.get(i) > max_t_list.get(i)){
+		for (int i = 0; i < N; i++) {
+			if (tausss.get(i) > max_t_list.get(i)) {
 				check = false;
 				break;
 			}
 		}
-		
+
 		return check;
 	}
 }
