@@ -18,7 +18,7 @@ public class Individual {
     private double totalDistance;   // tong chi phi duong di
     private ArrayList<Double> taus; // thoi gian sac cua cac sensor
     private double fitnessF;    // fitness f - danh gia duong di
-    private double fitnessG;    // fitness g - danh gia thoi gian sac
+    private int fitnessG;    // fitness g - danh gia thoi gian sac
 
     public Individual(Map map) {
         N = map.getN();
@@ -116,6 +116,10 @@ public class Individual {
         Factory factory = new Factory();
         fitnessF  = factory.fitnessFGACS(path, map);
     }
+    public void calculateFitnessGGACS(Map map) {
+        Factory factory = new Factory();
+        fitnessG  = factory.fitnessGGACS(this, map);
+    }
     private void calculateFitnessF(Map map) {
         Factory factory = new Factory();
         fitnessF  = factory.fitnessF(path, map);
@@ -133,7 +137,7 @@ public class Individual {
         return fitnessF;
     }
 
-    public double getFitnessG() {
+    public int getFitnessG() {
         return fitnessG;
     }
 

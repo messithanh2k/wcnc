@@ -2,6 +2,7 @@ package utils;
 
 import wrsn.Individual;
 import wrsn.Map;
+import wrsn.Sensor;
 import wrsn.WCE;
 
 import java.util.ArrayList;
@@ -107,9 +108,39 @@ public class Factory {
         return Factor.ALPHA * f1 + (1 - Factor.ALPHA) * f2;
     }
 
-    // public int fitnessGGACS(Individual individual, Map map){
-    //     int N = individual.getN();
-    //     ArrayList<Integer> path = individual.getPath();
-    //     ArrayList<Double> taus = individual.getTaus();
-    // }
+    public int fitnessGGACS(Individual individual, Map map){
+        int N = individual.getN();
+        int numDeadNode = 0;
+        ArrayList<Integer> path = individual.getPath();
+        ArrayList<Double> taus = individual.getTaus();
+
+        individual.calculateTotalDistance(map);
+		double E_T = individual.getTotalDistance() * WCE.P_M / WCE.V;
+
+		double t = (WCE.E_MC - E_T) / WCE.U;
+        for(int i = 0; i < N; i++){
+            taus.set(i, taus.get(i) * t);
+        }
+
+        double distance = 0.0;
+        double time_charged = 0.0;
+        for(int i = 0; i < N; i++){
+            Sensor s = map.getSensor(path.get(i));
+            int previous = i == 0 ? Factor.BS_INDEX : path.get(i - 1);
+            int current = path.get(i);
+            distance += map.distanceCalculate(previous, current);
+            if(i > 0){
+                time_charged += taus.get(path.get(i - 1));
+            }
+            double E_arrives = s.getE() - s.getP() * (distance / WCE.V + time_charged);
+            double E_finish = s.getE() - s.getP() * (individual.getTotalDistance() / WCE.V + t) + taus.get(path.get(i)) * WCE.U;
+
+            if (E_arrives < Sensor.E_MIN || E_finish < Sensor.E_MIN){
+                numDeadNode++;
+            }
+
+
+        }
+        return numDeadNode;
+    }
 }

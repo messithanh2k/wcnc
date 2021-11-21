@@ -32,9 +32,8 @@ public class Population {
        individuals = new ArrayList<Individual>();
        for (int i = 0; i < N; i++) {
         //    Khoi tao ca the i
-           setIndividual(i, new Individual(map,best_path_individual));
+           setIndividual(i, new Individual(map, best_path_individual));
        }
-       individuals.sort((i1, i2) -> Double.compare(i1.getFitnessF(), i2.getFitnessF()));
     }
 
     public int getN() {
