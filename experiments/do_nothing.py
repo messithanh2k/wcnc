@@ -1,5 +1,6 @@
 import os
 import numpy as np
+
 from experiments.algorithm import Algorithm
 
 from utils import factor

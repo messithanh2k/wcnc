@@ -29,7 +29,7 @@ class Factory:
             if i == 0:
                 previous = factor.BS_INDEX
             else:
-                previous = path.get(i - 1)
+                previous = path[i - 1]
             current = path[i]
             distance = map.distanceCalculate(previous, current)
             waitingTime += distance / self.WCE_.V
