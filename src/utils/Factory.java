@@ -141,6 +141,9 @@ public class Factory {
 
 
         }
+        for(int i = 0; i < N; i++){
+            taus.set(i, taus.get(i) / t);
+        }
         return numDeadNode;
     }
 }

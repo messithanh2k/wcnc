@@ -32,7 +32,6 @@ public class GACS extends Algorithm {
 		// calculate t and max_t_list
 		best_path_individual.calculateTotalDistance(map);
 		double E_T = best_path_individual.getTotalDistance() * WCE.P_M / WCE.V;
-
 		double t = (WCE.E_MC - E_T) / WCE.U;
 		int N = best_path_individual.getN();
 
@@ -44,20 +43,20 @@ public class GACS extends Algorithm {
 
 		Population population_phase2 = new Population(200, map, best_path_individual);
 		double t_normalize = 1.0;
-		gacs.phase2(population_phase2, map, factor, t_normalize, max_t_list);
-		/* test init individual
-		Individual in_pha_2 = new Individual(map, best_path_individual);
-		double sum = 0; for (double i : in_pha_2.getTaus()){ sum += i; }
-		System.out.println(sum);
-		System.out.println(gacs.checkIndividualValid(best_path_individual, in_pha_2, map));
-		*/
+		Individual best = gacs.phase2(best_path_individual, population_phase2, map, factor, t_normalize, max_t_list);
+		System.out.println(best.getTaus());
+
+
 
 		/* test init population
-		Population population_phase2 = new Population(N, map, best_path_individual);
-		System.out.println(population_phase2.getIndividual(0).getTaus());
-		System.out.println(gacs.checkIndividualValid(best_path_individual, population_phase2.getIndividual(0), map));
-		System.out.println(population_phase2.getIndividual(1).getTaus());
-		System.out.println(gacs.checkIndividualValid(best_path_individual, population_phase2.getIndividual(1), map));
+		Population population_phase2 = new Population(1000, map, best_path_individual);
+		int countt = 0;
+		for (Individual individual : population_phase2.getIndividuals()) {
+			if (gacs.checkIndividualValid(best_path_individual, individual, map) == false){
+				countt++;
+			}
+		}
+		System.out.println("sai: " + countt);
 		*/
 
 		/* test calfitness
@@ -108,7 +107,7 @@ public class GACS extends Algorithm {
 	// ghÃ©p, Ä‘á»™t biáº¿n -> náº¡p cÃ¡ thá»ƒ con vÃ o -> chá»�n lá»�c Ä‘á»ƒ táº¡o
 	// quáº§n thá»ƒ má»›i
 	private Individual phase1(Population P, Map map, Factor factor) {
-		for (int gen = 0; gen < 100000; gen++) {
+		for (int gen = 0; gen < 1000; gen++) {
 			int populationSize = P.getN(); // kich thuoc quan the
 
 			int N = map.getN(); // so luong sensor
@@ -352,8 +351,13 @@ public class GACS extends Algorithm {
 		};
 	}
 
-	private Individual phase2(Population P, Map map, Factor factor, double t_normalize, ArrayList<Double> max_t_list) {
-		for (int gen = 0; gen < 1000; gen++) {
+	private Individual phase2(Individual best_path_individual, Population P, Map map, Factor factor, double t_normalize, ArrayList<Double> max_t_list) {
+		for (Individual individual : P.getIndividuals()) {
+			if (checkIndividualValid(best_path_individual, individual, map) == false){
+				System.out.println("sai init");
+			}
+		}
+		for (int gen = 0; gen < 2; gen++) {
 			int populationSize = P.getN(); // kich thuoc quan the
 
 			int N = map.getN(); // so luong sensor
@@ -361,7 +365,12 @@ public class GACS extends Algorithm {
 			for (Individual individual : P.getIndividuals()) {
 				individual.calculateFitnessGGACS(map);;
 			}
-
+			// for (Individual individual : P.getIndividuals()) {
+			// 	if (checkIndividualValid(best_path_individual, individual, map) == false){
+			// 		System.out.println("sai" + gen);
+			// 	}
+			// }
+			
 			// Tien hanh lai ghep va dot bien
 			ArrayList<Individual> offspingIndividuals = new ArrayList<>();
 			Random rand = new Random();
@@ -398,6 +407,12 @@ public class GACS extends Algorithm {
 			for (int i = populationSize; i < len; i++) {
 				new_population.remove(populationSize);
 			}
+			// for (int i = 0; i < populationSize; i++){
+			// 	if (checkIndividualValid(best_path_individual, new_population.get(i), map) == false){
+			// 		System.out.println("sai roi");
+			// 		System.out.println(gen);
+			// 	}
+			// }
 
 			P.setIndividuals(new_population);
         //    System.out.println();
@@ -546,7 +561,6 @@ public class GACS extends Algorithm {
 	}
 
 	private boolean checkIndividualValid(Individual best_path_individual, Individual individual, Map map) {
-		best_path_individual.calculateTotalDistance(map);
 		double E_T = best_path_individual.getTotalDistance() * WCE.P_M / WCE.V;
 
 		double t = (WCE.E_MC - E_T) / WCE.U;
@@ -557,10 +571,18 @@ public class GACS extends Algorithm {
 			double max_t = (Sensor.E_MAX - Sensor.E_MIN) / (WCE.U - map.getSensor(i).getP());
 			max_t_list.add(max_t / t);
 		}
+		// System.out.println(max_t_list);
+
 
 		ArrayList<Double> tausss = individual.getTaus();
 
 		boolean check = true;
+		for (int i = 0; i < N; i++){
+			if (tausss.get(i) < 0){
+				System.out.println("nho hon 0");
+				return false;
+			}
+		}
 		double sum = 0; 
 		for (double i : tausss){ 
 			sum += i; 
@@ -569,6 +591,8 @@ public class GACS extends Algorithm {
 		for (int i = 0; i < N; i++) {
 			if (tausss.get(i) > max_t_list.get(i)) {
 				check = false;
+				// System.out.println("max t");
+				// System.out.println(max_t_list);
 				break;
 			}
 		}
