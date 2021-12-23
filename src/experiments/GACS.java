@@ -44,7 +44,11 @@ public class GACS extends Algorithm {
 		Population population_phase2 = new Population(200, map, best_path_individual);
 		double t_normalize = 1.0;
 		Individual best = gacs.phase2(best_path_individual, population_phase2, map, factor, t_normalize, max_t_list);
-		System.out.println(best.getTaus());
+
+		if (gacs.checkIndividualValid(best_path_individual, best, map)){
+			System.out.println(best.getPath());
+			System.out.println(best.getTaus());
+		}
 
 
 
@@ -107,7 +111,7 @@ public class GACS extends Algorithm {
 	// ghÃ©p, Ä‘á»™t biáº¿n -> náº¡p cÃ¡ thá»ƒ con vÃ o -> chá»�n lá»�c Ä‘á»ƒ táº¡o
 	// quáº§n thá»ƒ má»›i
 	private Individual phase1(Population P, Map map, Factor factor) {
-		for (int gen = 0; gen < 1000; gen++) {
+		for (int gen = 0; gen < 10000; gen++) {
 			int populationSize = P.getN(); // kich thuoc quan the
 
 			int N = map.getN(); // so luong sensor
@@ -167,15 +171,9 @@ public class GACS extends Algorithm {
 			}
 
 			P.setIndividuals(new_population);
-//            System.out.println();
-//            for(Individual individual : P.getIndividuals()) {
-//            	System.out.print(individual.getFitnessF()+ " ");
-//            }
 		}
 
 		Individual best_individual = P.getIndividuals().get(0);
-		System.out.println(best_individual.getFitnessF());
-		System.out.println(best_individual.getPath());
 
 		return best_individual;
 
@@ -357,19 +355,19 @@ public class GACS extends Algorithm {
 				System.out.println("sai init");
 			}
 		}
-		for (int gen = 0; gen < 2; gen++) {
+		for (int gen = 0; gen < 10000; gen++) {
 			int populationSize = P.getN(); // kich thuoc quan the
+			for (Individual individual : P.getIndividuals()){
+				if (checkIndividualValid(best_path_individual, individual, map) == false){
+					System.out.println("sai quan the moi roi");
+				}
+			}
 
 			int N = map.getN(); // so luong sensor
 			// Khoi tao va tinh fitness
 			for (Individual individual : P.getIndividuals()) {
 				individual.calculateFitnessGGACS(map);;
 			}
-			// for (Individual individual : P.getIndividuals()) {
-			// 	if (checkIndividualValid(best_path_individual, individual, map) == false){
-			// 		System.out.println("sai" + gen);
-			// 	}
-			// }
 			
 			// Tien hanh lai ghep va dot bien
 			ArrayList<Individual> offspingIndividuals = new ArrayList<>();
@@ -407,18 +405,9 @@ public class GACS extends Algorithm {
 			for (int i = populationSize; i < len; i++) {
 				new_population.remove(populationSize);
 			}
-			// for (int i = 0; i < populationSize; i++){
-			// 	if (checkIndividualValid(best_path_individual, new_population.get(i), map) == false){
-			// 		System.out.println("sai roi");
-			// 		System.out.println(gen);
-			// 	}
-			// }
 
 			P.setIndividuals(new_population);
-        //    System.out.println();
-        //    for(Individual individual : P.getIndividuals()) {
-        //    	System.out.print(individual.getFitnessG()+ " ");
-        //    }
+
 		}
 
 		Individual best_individual = P.getIndividuals().get(0);
@@ -435,7 +424,7 @@ public class GACS extends Algorithm {
 		Individual offspring1 = new Individual(parent1);
 		Individual offspring2 = new Individual(parent2);
 
-		double beta = rand.nextDouble() - 0.5; // random beta
+		double beta = rand.nextDouble(); // random beta
 
 		// lai 2 con
 		ArrayList<Double> taus1 = offspring1.getTaus();
@@ -443,6 +432,14 @@ public class GACS extends Algorithm {
 
 		taus1.set(i, (1 - beta) * parent1.getTaus().get(i) + beta * parent2.getTaus().get(i));
 		taus2.set(i, (1 - beta) * parent2.getTaus().get(i) + beta * parent1.getTaus().get(i));
+		if (taus1.get(i) < 0 || taus2.get(i) < 0){
+			System.out.println("sai point cross");
+			System.out.println("p1 " + parent1.getTaus().get(i));
+			System.out.println("p2 " + parent2.getTaus().get(i));
+			System.out.println("beta" + beta);
+			System.out.println(taus1.get(i));
+			System.out.println(taus2.get(i));
+		}
 
 		for (int j = 0; j < i; j++) {
 			taus1.set(j, parent1.getTaus().get(j));
