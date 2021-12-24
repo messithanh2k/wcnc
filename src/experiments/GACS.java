@@ -111,7 +111,7 @@ public class GACS extends Algorithm {
 	// ghÃ©p, Ä‘á»™t biáº¿n -> náº¡p cÃ¡ thá»ƒ con vÃ o -> chá»�n lá»�c Ä‘á»ƒ táº¡o
 	// quáº§n thá»ƒ má»›i
 	private Individual phase1(Population P, Map map, Factor factor) {
-		for (int gen = 0; gen < 10000; gen++) {
+		for (int gen = 0; gen < 1000; gen++) {
 			int populationSize = P.getN(); // kich thuoc quan the
 
 			int N = map.getN(); // so luong sensor
@@ -355,7 +355,7 @@ public class GACS extends Algorithm {
 				System.out.println("sai init");
 			}
 		}
-		for (int gen = 0; gen < 10000; gen++) {
+		for (int gen = 0; gen < 1000; gen++) {
 			int populationSize = P.getN(); // kich thuoc quan the
 			for (Individual individual : P.getIndividuals()){
 				if (checkIndividualValid(best_path_individual, individual, map) == false){
@@ -424,7 +424,7 @@ public class GACS extends Algorithm {
 		Individual offspring1 = new Individual(parent1);
 		Individual offspring2 = new Individual(parent2);
 
-		double beta = rand.nextDouble(); // random beta
+		double beta = rand.nextDouble() - 0.5; // random beta
 
 		// lai 2 con
 		ArrayList<Double> taus1 = offspring1.getTaus();
@@ -432,13 +432,11 @@ public class GACS extends Algorithm {
 
 		taus1.set(i, (1 - beta) * parent1.getTaus().get(i) + beta * parent2.getTaus().get(i));
 		taus2.set(i, (1 - beta) * parent2.getTaus().get(i) + beta * parent1.getTaus().get(i));
-		if (taus1.get(i) < 0 || taus2.get(i) < 0){
-			System.out.println("sai point cross");
-			System.out.println("p1 " + parent1.getTaus().get(i));
-			System.out.println("p2 " + parent2.getTaus().get(i));
-			System.out.println("beta" + beta);
-			System.out.println(taus1.get(i));
-			System.out.println(taus2.get(i));
+		if (taus1.get(i) < 0){
+			taus1.set(i, -taus1.get(i));
+		}
+		if (taus2.get(i) < 0){
+			taus2.set(i, -taus2.get(i));
 		}
 
 		for (int j = 0; j < i; j++) {
@@ -568,7 +566,6 @@ public class GACS extends Algorithm {
 			double max_t = (Sensor.E_MAX - Sensor.E_MIN) / (WCE.U - map.getSensor(i).getP());
 			max_t_list.add(max_t / t);
 		}
-		// System.out.println(max_t_list);
 
 
 		ArrayList<Double> tausss = individual.getTaus();
@@ -588,8 +585,6 @@ public class GACS extends Algorithm {
 		for (int i = 0; i < N; i++) {
 			if (tausss.get(i) > max_t_list.get(i)) {
 				check = false;
-				// System.out.println("max t");
-				// System.out.println(max_t_list);
 				break;
 			}
 		}
