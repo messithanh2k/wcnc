@@ -45,10 +45,10 @@ public class GACS extends Algorithm {
 		double t_normalize = 1.0;
 		Individual best = gacs.phase2(best_path_individual, population_phase2, map, factor, t_normalize, max_t_list);
 
-		if (gacs.checkIndividualValid(best_path_individual, best, map)){
-			System.out.println(best.getPath());
-			System.out.println(best.getTaus());
-		}
+		// if (gacs.checkIndividualValid(best_path_individual, best, map)){
+		// 	System.out.println(best.getPath());
+		// 	System.out.println(best.getTaus());
+		// }
 
 
 
@@ -111,6 +111,7 @@ public class GACS extends Algorithm {
 	// ghÃ©p, Ä‘á»™t biáº¿n -> náº¡p cÃ¡ thá»ƒ con vÃ o -> chá»�n lá»�c Ä‘á»ƒ táº¡o
 	// quáº§n thá»ƒ má»›i
 	private Individual phase1(Population P, Map map, Factor factor) {
+		ArrayList<Double> result = new ArrayList<>();
 		for (int gen = 0; gen < 1000; gen++) {
 			int populationSize = P.getN(); // kich thuoc quan the
 
@@ -169,9 +170,11 @@ public class GACS extends Algorithm {
 			for (int i = populationSize; i < len; i++) {
 				new_population.remove(populationSize);
 			}
+			result.add(new_population.get(0).getFitnessF());
 
 			P.setIndividuals(new_population);
 		}
+		System.out.println(result);
 
 		Individual best_individual = P.getIndividuals().get(0);
 
@@ -355,6 +358,7 @@ public class GACS extends Algorithm {
 				System.out.println("sai init");
 			}
 		}
+		ArrayList<Integer> result = new ArrayList<>();
 		for (int gen = 0; gen < 1000; gen++) {
 			int populationSize = P.getN(); // kich thuoc quan the
 			for (Individual individual : P.getIndividuals()){
@@ -362,7 +366,6 @@ public class GACS extends Algorithm {
 					System.out.println("sai quan the moi roi");
 				}
 			}
-
 			int N = map.getN(); // so luong sensor
 			// Khoi tao va tinh fitness
 			for (Individual individual : P.getIndividuals()) {
@@ -405,10 +408,13 @@ public class GACS extends Algorithm {
 			for (int i = populationSize; i < len; i++) {
 				new_population.remove(populationSize);
 			}
+			
+			result.add(new_population.get(0).getFitnessG());
 
 			P.setIndividuals(new_population);
 
 		}
+		System.out.println(result);
 
 		Individual best_individual = P.getIndividuals().get(0);
 		System.out.println(best_individual.getFitnessG());

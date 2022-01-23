@@ -113,8 +113,8 @@ public class Factory {
         int numDeadNode = 0;
         ArrayList<Integer> path = individual.getPath();
         ArrayList<Double> taus = individual.getTaus();
-
         individual.calculateTotalDistance(map);
+
 		double E_T = individual.getTotalDistance() * WCE.P_M / WCE.V;
 
 		double t = (WCE.E_MC - E_T) / WCE.U;

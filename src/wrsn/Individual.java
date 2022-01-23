@@ -104,6 +104,7 @@ public class Individual {
     }
 
     public void calculateTotalDistance(Map map) {
+        totalDistance = 0;
         int nSensors = path.size();
         for (int i = 0; i < nSensors; i++) {
             int previous = i == 0 ? Factor.BS_INDEX : path.get(i - 1);
