@@ -113,7 +113,7 @@ class MobileCharger:
 
             # Huy
             self.sumEnergyPerT += self.chargingRate * t
-            self.sumEnergy += self.chargingRate * t
+            # self.sumEnergy += self.chargingRate * t
             self.energy = max(self.threshold, self.energy -
                               self.chargingRate * t)
             self.checkStatus()

@@ -29,23 +29,28 @@ class GraphRlOptimizer(OfflineOptimizer, ABC):
                 Esafe.append(self.Esafe)
         self.Esafe -= self.linearDF
         self.checkPoint += self.T
-        graph = StatusGraph(args=self.args, net=net, mc=mc, delta=100, T=T, Esafe=Esafe)
+        graph = StatusGraph(args=self.args, net=net, mc=mc,
+                            delta=100, T=T, Esafe=Esafe)
         graph.initialize()
         # schedule MC
         for ver in graph.path:
-            mc.schedule.append([ver.node.location, ver.chargingTime, [ver.node]])
+            mc.schedule.append(
+                [ver.node.location, ver.chargingTime, [ver.node]])
         mc.schedule.append([net.baseStation.location, 0, []])
         del graph
 
-        file = open('{}/{}_{}_{}_{}.txt'.format(self.args.result_dir, self.args.dataset, self.args.algo, self.args.time_test, self.args.time_T), 'a')
+        file = open('{}/{}_{}_{}_{}.txt'.format(self.args.result_dir, self.args.dataset,
+                    self.args.algo, self.args.time_test, self.args.time_T), 'a')
         print('Sum Energy Per T:        {}'.format(mc.sumEnergyPerT))
         file.write('Sum Energy Per T:   {}\n'.format(mc.sumEnergyPerT))
-        print('Sum EnergY:              {}'.format(mc.sumEnergy))
-        file.write('Sum EnergY:         {}\n'.format(mc.sumEnergy))
-        print('PCT remain battery:      {}%'.format(100 * (Parameter.MC_CAPACITY - mc.sumEnergyPerT) / Parameter.MC_CAPACITY))
-        file.write('PCT remain battery: {}%\n'.format(100 * (Parameter.MC_CAPACITY - mc.sumEnergyPerT) / Parameter.MC_CAPACITY))
+        # print('Sum EnergY:              {}'.format(mc.sumEnergy))
+        # file.write('Sum EnergY:         {}\n'.format(mc.sumEnergy))
+        # print('PCT remain battery:      {}%'.format(100 * (Parameter.MC_CAPACITY - mc.sumEnergyPerT) / Parameter.MC_CAPACITY))
+        # file.write('PCT remain battery: {}%\n'.format(100 * (Parameter.MC_CAPACITY - mc.sumEnergyPerT) / Parameter.MC_CAPACITY))
         mc.setSumEnergyPerT()
-        print('Time: ' + str(self.env.now) + ' The number of dead node:' + str(net.countDeadNodes()))
-        file.write('Time: ' + str(self.env.now) + ' The number of dead node:' + str(net.countDeadNodes()) + '\n')
+        print('Time: ' + str(self.env.now) +
+              ' The number of dead node:' + str(net.countDeadNodes()))
+        file.write('Time: ' + str(self.env.now) +
+                   ' The number of dead node:' + str(net.countDeadNodes()) + '\n')
         file.write('\n')
         file.close()
