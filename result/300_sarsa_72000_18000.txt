@@ -1,0 +1,26 @@
+Sum Energy Per T:   0
+Sum EnergY:         0
+PCT remain battery: 100.0%
+Time: 0 The number of dead node:0
+
+Sum Energy Per T:   59286.628403467024
+Sum EnergY:         59286.628403467024
+PCT remain battery: 45.104973700493495%
+Time: 18000 The number of dead node:31
+
+Sum Energy Per T:   61750.15738888641
+Sum EnergY:         121036.7857923534
+PCT remain battery: 42.8239283436237%
+Time: 36000 The number of dead node:66
+
+Sum Energy Per T:   59623.50745336078
+Sum EnergY:         180660.29324571416
+PCT remain battery: 44.793048654295575%
+Time: 54000 The number of dead node:105
+
+Sum Energy Per T:   60459.067484306324
+Sum EnergY:         241119.36073002047
+PCT remain battery: 44.01938195897563%
+Time: 72000 The number of dead node:135
+
+

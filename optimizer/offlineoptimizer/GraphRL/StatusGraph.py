@@ -8,7 +8,8 @@ from optimizer.offlineoptimizer.GraphRL.Vertex import Vertex
 
 
 class StatusGraph:
-    def __init__(self, net, mc, Esafe, delta=100, T=20000):
+    def __init__(self, args, net, mc, Esafe, delta=100, T=20000):
+        self.args = args
         self.delta = delta
         self.net = net
         self.mc = mc
@@ -91,9 +92,13 @@ class StatusGraph:
                     distance.euclidean(self.net.listNodes[i].location
                                        , self.net.baseStation.location) / self.mc.velocity)])
         self.epi = 1
-
-        # self.monte_carlo()
-        self.sarsa()
+        
+        if self.args.algo == 'monte_carlo':
+            self.monte_carlo()
+        elif self.args.algo == 'sarsa':
+            self.sarsa()
+        elif self.args.algo == 'expected_sarsa':
+            pass
 
     def setNeighbors(self, vertex):
         sumTime = 0

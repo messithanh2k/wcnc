@@ -40,9 +40,13 @@ class MobileCharger:
         self.status = 1
         self.checkStatus()
 
+        self.sumEnergy = 0
+        self.sumEnergyPerT = 0
+
     def move(self, destination, simulateTime, t=1):
         """
-        The movement within simulateTime to a destination :param destination: the final destination of this movement
+        The movement within simulateTime to a destination 
+        :param destination: the final destination of this movement
         :param simulateTime: the time limit of movement. The MC may not reach the destination if the simulateTime is
         run out
         :param t: the status of MC is updated every t(s)
@@ -53,14 +57,18 @@ class MobileCharger:
             if sumTime < t:
                 t = sumTime
             if self.status == 0:
-                print("MC run out of energy while moving from !" + str(self.location))
+                print("MC run out of energy while moving from !" +
+                      str(self.location))
                 yield self.env.timeout(sumTime)
                 sumTime = 0
                 continue
             else:
-                energyConsume = distance.euclidean(self.location, destination) / self.velocity * self.pm
-                movingVector = [destination[i] - self.location[i] for i in range(0, len(self.location))]
-                movingTime = distance.euclidean(self.location, destination) / self.velocity
+                energyConsume = distance.euclidean(
+                    self.location, destination) / self.velocity * self.pm
+                movingVector = [destination[i] - self.location[i]
+                                for i in range(0, len(self.location))]
+                movingTime = distance.euclidean(
+                    self.location, destination) / self.velocity
                 if movingTime > t:
                     energyConsume = energyConsume / movingTime * t
                     movingVector = [i / movingTime * t for i in movingVector]
@@ -68,9 +76,11 @@ class MobileCharger:
                 else:
                     t = movingTime
                 if self.energy - energyConsume <= self.threshold:
-                    movingVector = [i / ((self.energy - self.threshold) / energyConsume) for i in movingVector]
+                    movingVector = [
+                        i / ((self.energy - self.threshold) / energyConsume) for i in movingVector]
                     energyConsume = self.energy - self.threshold
-                self.location = [self.location[i] + movingVector[i] for i in range(0, len(self.location))]
+                self.location = [self.location[i] + movingVector[i]
+                                 for i in range(0, len(self.location))]
                 self.energy = self.energy - energyConsume
                 self.checkStatus()
                 sumTime -= t
@@ -89,16 +99,23 @@ class MobileCharger:
             if sumTime < t:
                 t = sumTime
             if self.status == 0:
-                print("MC run out of energy while charging at !" + str(self.location))
+                print("MC run out of energy while charging at !" +
+                      str(self.location))
                 yield self.env.timeout(sumTime)
                 sumTime = 0
                 continue
             self.setChargingRate(nodes)
             if self.status == 0:
                 sumTime -= t
+                self.sumEnergyPerT += self.chargingRate * t
                 yield self.env.timeout(t)
                 continue
-            self.energy = max(self.threshold, self.energy - self.chargingRate * t)
+
+            # Huy
+            self.sumEnergyPerT += self.chargingRate * t
+            self.sumEnergy += self.chargingRate * t
+            self.energy = max(self.threshold, self.energy -
+                              self.chargingRate * t)
             self.checkStatus()
             sumTime -= t
             yield self.env.timeout(t)
@@ -153,7 +170,8 @@ class MobileCharger:
                 nodes = action[2]
                 yield self.env.process(
                     self.move(destination=destination, simulateTime=simulateTime))
-                print('Time: ' + str(self.env.now) + ", MC " + str(self.id) + ' is at ' + str(self.location))
+                print('Time: ' + str(self.env.now) + ", MC " +
+                      str(self.id) + ' is at ' + str(self.location))
                 if self.location != net.baseStation.location and len(nodes) != 0:
                     yield self.env.process(
                         self.chargeNodes(chargingTime=chargingTime, simulateTime=simulateTime,
@@ -170,3 +188,6 @@ class MobileCharger:
         """
         if self.energy <= self.threshold:
             self.status = 0
+
+    def setSumEnergyPerT(self, energy=0):
+        self.sumEnergyPerT = energy

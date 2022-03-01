@@ -3,7 +3,7 @@
 
 # Nodes specifications
 NODE_CAPACITY = 10800
-NODE_THRESHOLD = 540
+NODE_THRESHOLD = 0
 
 # MobileCharger specifications
 MC_CAPACITY = 108000
